@@ -5,7 +5,8 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon -r dotenv/config --experimental-json-modules src/index.js"
+    "dev": "nodemon -r dotenv/config --experimental-json-modules src/index.js",
+    "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,css,html}\""
   },
   "keywords": [
     "node",
