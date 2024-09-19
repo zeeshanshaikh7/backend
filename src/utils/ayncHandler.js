@@ -6,6 +6,8 @@ const asyncHandler = (requestHandler) => {
   };
 };
 
+
+
 /* 
 const asyncHandler = (func) => async (req, res, next) => {
   try {
@@ -17,6 +19,7 @@ const asyncHandler = (func) => async (req, res, next) => {
     });
   }
 };
- */
+*/
+
 
 export { asyncHandler };
