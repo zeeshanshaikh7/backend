@@ -11,10 +11,12 @@ class ApiError extends Error {
     this.message = message;
     this.success = false;
     this.errors = errors;
-    if (stack) {
-      this.stack = stack;
+
+    // Ensure Error.captureStackTrace is supported
+    if (typeof Error.captureStackTrace === 'function') {
+      Error.captureStackTrace(this, ApiError); // Changed `this.constructor` to `ApiError`
     } else {
-      Error.captureStackTrace(this.this.constructor);
+      this.stack = new Error().stack; // Fallback for environments that don't support captureStackTrace
     }
   }
 }
