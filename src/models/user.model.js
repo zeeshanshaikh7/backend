@@ -14,7 +14,7 @@ const userSchema = new Schema(
          type: String,
          required: true,
          lowercase: true,
-         // trim: true,
+         trim: true,
          unique: true,
          index: true,
       },
@@ -69,7 +69,7 @@ userSchema.methods.generateAccessToken = function () {
       },
       process.env.ACCESS_TOKEN_SECRETS,
       {
-         expiresIn: ACCESS_TOKEN_EXPIRY,
+         expiresIn: process.env.ACCESS_TOKEN_EXPIRY,
       }
    );
 };
@@ -81,7 +81,7 @@ userSchema.methods.generateRefreshToken = function () {
       },
       process.env.REFRESH_TOKEN_SECRETS,
       {
-         expiresIn: REFRESH_TOKEN_EXPIRY,
+         expiresIn: process.env.REFRESH_TOKEN_EXPIRY,
       }
    );
 };
