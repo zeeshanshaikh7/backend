@@ -240,9 +240,31 @@ const changeCurrentPassword = asyncHandler(async (req, res) => {
       .json(new ApiResponse(200, {}, "Password changed successfully"));
 });
 
-const getCurrentUser = 0;
+const getCurrentUser = asyncHandler(async (req, res) => {
+   return res
+      .status(200)
+      .json(new ApiResponse(200, req.user, "User fetched successfully"));
+});
 
-const updateAccountDetails = 0;
+const updateAccountDetails = asyncHandler(async (req, res) => {
+   const { fullName, email } = req.body;
+
+   if (!fullName || !email) {
+      throw new ApiError(401, "All fields are required");
+   }
+
+   const user = await User.findByIdAndUpdate(
+      req.user._id,
+      {
+         $set: { fullName, email },
+      },
+      { new: true }
+   ).select("-password");
+
+   return res
+      .status(200)
+      .json(new ApiResponse(200, user, "Account details updated successfully"));
+});
 
 const updateUserAvatar = 0;
 
