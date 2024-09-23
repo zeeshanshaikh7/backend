@@ -2,7 +2,10 @@ import { asyncHandler } from "../utils/ayncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { User } from "../models/user.model.js";
-import { uploadOnCloudinary } from "../utils/cloudinary.js";
+import {
+   uploadOnCloudinary,
+   deleteFromCloudinary,
+} from "../utils/cloudinary.js";
 import jwt from "jsonwebtoken";
 
 const generateAccessTokenAndRefreshToken = async (userId) => {
@@ -266,9 +269,96 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
       .json(new ApiResponse(200, user, "Account details updated successfully"));
 });
 
-const updateUserAvatar = 0;
+const updateUserAvatar = asyncHandler(async (req, res) => {
+   const localFilePath = req?.file.path;
 
-const updateUserCoverImage = 0;
+   if (!localFilePath) {
+      throw new ApiError(401, "File is missing");
+   }
+
+   // TODO: delete old files
+   const userAvtarUrl = await User.findById(req?.user._id).select("avatar");
+
+   const publicId = extractPublicId(userAvtarUrl);
+   const response = await deleteFromCloudinary(publicId);
+
+   if (!response) {
+      throw new ApiError(400, "Error while deleting old image");
+   }
+
+   const avatar = await uploadOnCloudinary(localFilePath);
+
+   if (!avatar?.url) {
+      throw new ApiError(400, "Error while uploading");
+   }
+
+   const user = await User.findByIdAndUpdate(
+      req?.user._id,
+      {
+         $set: { avatar: avatar.url },
+      },
+      { new: true }
+   ).select("-password");
+
+   return res
+      .status(200)
+      .json(new ApiResponse(200, user, "Avatar changed successfully"));
+});
+
+const updateUserCoverImage = asyncHandler(async (req, res) => {
+   const localFilePath = req?.file.path;
+
+   if (!localFilePath) {
+      throw new ApiError(401, "File is missing");
+   }
+
+   // TODO: delete old files
+   const userCoverImageUrl = await User.findById(req?.user._id).select(
+      "coverImage"
+   );
+   if (!userCoverImageUrl) {
+      throw new ApiError(400, "Cover image is missing");
+   }
+   const publicId = extractPublicId(userCoverImageUrl);
+   const response = await deleteFromCloudinary(publicId);
+
+   if (!response) {
+      throw new ApiError(400, "Error while deleting old image");
+   }
+
+   const coverImage = await uploadOnCloudinary(localFilePath);
+
+   if (!coverImage?.url) {
+      throw new ApiError(400, "Error while uploading");
+   }
+
+   const user = await User.findByIdAndUpdate(
+      req?.user._id,
+      {
+         $set: { coverImage: coverImage.url },
+      },
+      { new: true }
+   ).select("-password");
+
+   return res
+      .status(200)
+      .json(new ApiResponse(200, user, "cover Image changed successfully"));
+});
+
+
+const getUserChannelProfile = 0;
+const getWatchHistory = 0;
+
+function extractPublicId(url) {
+   // Remove the base URL and version part
+   const parts = url.split("/");
+   // Get the last part (file name with extension)
+   const fileName = parts.pop();
+   // Get the public ID without the file extension
+   const publicId = fileName.split(".").slice(0, -1).join(".");
+
+   return publicId;
+}
 
 export {
    registerUser,
@@ -280,4 +370,6 @@ export {
    updateAccountDetails,
    updateUserAvatar,
    updateUserCoverImage,
+   getUserChannelProfile,
+   getWatchHistory,
 };
